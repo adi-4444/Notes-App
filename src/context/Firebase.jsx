@@ -8,7 +8,18 @@ import {
 	onAuthStateChanged,
 	signOut,
 } from "firebase/auth";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import {
+	getFirestore,
+	collection,
+	addDoc,
+	query,
+	getDocs,
+	updateDoc,
+	doc,
+	serverTimestamp,
+	deleteDoc,
+	getDoc,
+} from "firebase/firestore";
 
 const firebaseConfig = {
 	apiKey: "AIzaSyB3s9TTl0gJkk7DAjbBglpYwhcOAOZkMes",
@@ -52,15 +63,53 @@ const FirebaseProvider = ({ children }) => {
 		return user;
 	};
 	const writeData = async (data) => {
-		const res = addDoc(collection(firestore, "notes"), {
-			data,
-			date: Date.now(),
+		const user = currentUser;
+		if (!user) return;
+		await addDoc(collection(firestore, `users/${user.uid}/notes`), {
+			title: data.title,
+			description: data.description,
+			createdAt: serverTimestamp(),
 		});
-		return res;
+		return "Note Created Successfully";
+	};
+	const getNotesByUser = async () => {
+		const user = currentUser;
+		if (!user) {
+			// user is not authenticated
+			return [];
+		}
+		const q = query(collection(firestore, `users/${user.uid}/notes`));
+		const querySnapshot = await getDocs(q);
+		const notes = querySnapshot.docs.map((doc) => ({
+			id: doc.id,
+			...doc.data(),
+		}));
+		return notes;
+	};
+	const editNote = async (noteId, updatedData) => {
+		const user = currentUser;
+		const noteRef = doc(firestore, `users/${user.uid}/notes/${noteId}`);
+		await updateDoc(noteRef, updatedData);
+		return "Note updated successfully";
+	};
+	const deleteNote = async (noteId) => {
+		const user = currentUser;
+		const noteRef = doc(firestore, `users/${user.uid}/notes/${noteId}`);
+		await deleteDoc(noteRef);
+		return "Note deleted successfully";
 	};
 	return (
 		<FirebaseContext.Provider
-			value={{ currentUser, logOut, signUp, signIn, writeData }}
+			value={{
+				currentUser,
+				logOut,
+				signUp,
+				signIn,
+				writeData,
+				getNotesByUser,
+				editNote,
+				deleteNote,
+			}}
 		>
 			{children}
 		</FirebaseContext.Provider>

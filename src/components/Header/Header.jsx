@@ -3,9 +3,8 @@ import { Container, Navbar } from "react-bootstrap";
 import { useFirebase } from "../../context/Firebase";
 
 const Header = () => {
-	const firebase = useFirebase();
-	const { currentUser, logOut } = firebase;
-	console.log(firebase);
+	const { currentUser, logOut } = useFirebase();
+
 	return (
 		<div>
 			<Navbar bg='primary'>

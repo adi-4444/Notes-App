@@ -1,0 +1,13 @@
+.all-notes {
+	overflow: auto;
+	height: 82vh;
+}
+.description {
+	height: 250px;
+	overflow: auto;
+}
+@media only screen and (max-width: 1000px) {
+	.description {
+		height: auto;
+	}
+}
